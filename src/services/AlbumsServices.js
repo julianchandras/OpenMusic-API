@@ -1,13 +1,14 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-const SongServices = require('./SongsServices');
+const SongsServices = require('./SongsServices');
 const InvariantError = require('../api/exceptions/InvariantError');
 const NotFoundError = require('../api/exceptions/NotFoundError');
+// const AuthorizationError = require('../api/exceptions/AuthorizationError');
 
 class AlbumsServices {
   constructor() {
     this._pool = new Pool();
-    this._songServices = new SongServices();
+    this._songsServices = new SongsServices();
   }
 
   async addAlbum({ name, year }) {
@@ -33,11 +34,11 @@ class AlbumsServices {
     };
 
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
-    const songs = await this._songServices.getSongsByAlbumId(id);
+    const songs = await this._songsServices.getSongsByAlbumId(id);
 
     const finalResult = { ...result.rows[0] };
     finalResult.songs = songs;
@@ -52,7 +53,7 @@ class AlbumsServices {
     };
 
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui album');
     }
     return result.rows[0].id;
@@ -65,7 +66,7 @@ class AlbumsServices {
     };
 
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
     }
   }

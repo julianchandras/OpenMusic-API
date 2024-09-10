@@ -3,8 +3,9 @@ const { nanoid } = require('nanoid');
 const { mapSongDBToModel } = require('../utils');
 const InvariantError = require('../api/exceptions/InvariantError');
 const NotFoundError = require('../api/exceptions/NotFoundError');
+// const AuthorizationError = require('../api/exceptions/AuthorizationError');
 
-class SongServices {
+class SongsServices {
   constructor() {
     this._pool = new Pool();
   }
@@ -55,10 +56,10 @@ class SongServices {
     };
 
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Lagu tidak ditemukan');
     }
-    return result.rows.map(mapSongDBToModel)[0];
+    return mapSongDBToModel(result.rows[0]);
   }
 
   async getSongsByAlbumId(albumId) {
@@ -85,7 +86,7 @@ class SongServices {
     };
 
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui lagu');
     }
     return result.rows[0].id;
@@ -98,10 +99,10 @@ class SongServices {
     };
 
     const result = await this._pool.query(query);
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
     }
   }
 }
 
-module.exports = SongServices;
+module.exports = SongsServices;
