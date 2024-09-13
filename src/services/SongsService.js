@@ -3,9 +3,8 @@ const { nanoid } = require('nanoid');
 const { mapSongDBToModel } = require('../utils');
 const InvariantError = require('../api/exceptions/InvariantError');
 const NotFoundError = require('../api/exceptions/NotFoundError');
-// const AuthorizationError = require('../api/exceptions/AuthorizationError');
 
-class SongsServices {
+class SongsService {
   constructor() {
     this._pool = new Pool();
   }
@@ -105,4 +104,4 @@ class SongsServices {
   }
 }
 
-module.exports = SongsServices;
+module.exports = SongsService;

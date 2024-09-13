@@ -1,14 +1,15 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-const SongsServices = require('./SongsServices');
+const SongsService = require('./SongsService');
 const InvariantError = require('../api/exceptions/InvariantError');
 const NotFoundError = require('../api/exceptions/NotFoundError');
 const AuthorizationError = require('../api/exceptions/AuthorizationError');
 
-class PlaylistsServices {
-  constructor() {
+class PlaylistsService {
+  constructor(collaborationsService) {
     this._pool = new Pool();
-    this._songsServices = new SongsServices();
+    this._collaborationsService = collaborationsService;
+    this._songsService = new SongsService();
   }
 
   async addPlaylist({ name, owner }) {
@@ -32,7 +33,9 @@ class PlaylistsServices {
         SELECT playlists.id AS id, playlists.name AS name, users.username AS username
         FROM playlists
         INNER JOIN users ON playlists.owner = users.id
-        WHERE users.id = $1
+        LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id
+        WHERE users.id = $1 OR collaborations.user_id = $1
+        GROUP BY playlists.id, users.username
       `,
       values: [owner],
     };
@@ -54,7 +57,7 @@ class PlaylistsServices {
   }
 
   async addPlaylistSong(playlistId, songId, owner) {
-    await this._songsServices.getSongById(songId);
+    await this._songsService.getSongById(songId);
     await this.getPlaylistById(playlistId);
 
     const id = `playlist_songs-${nanoid(16)}`;
@@ -167,6 +170,26 @@ class PlaylistsServices {
     }
   }
 
+  async verifyPlaylistAccess(id, owner) {
+    try {
+      await this.verifyPlaylistOwner(id, owner);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        throw error;
+      }
+
+      try {
+        await this._collaborationsService.verifyCollaborator(id, owner);
+      } catch (err) {
+        if (err instanceof NotFoundError) {
+          throw err;
+        }
+
+        throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+      }
+    }
+  }
+
   async getPlaylistActivities({ playlistId }) {
     const query = {
       text: `
@@ -212,4 +235,4 @@ class PlaylistsServices {
   }
 }
 
-module.exports = PlaylistsServices;
+module.exports = PlaylistsService;

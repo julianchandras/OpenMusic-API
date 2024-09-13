@@ -1,14 +1,13 @@
 const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
-const SongsServices = require('./SongsServices');
+const SongsService = require('./SongsService');
 const InvariantError = require('../api/exceptions/InvariantError');
 const NotFoundError = require('../api/exceptions/NotFoundError');
-// const AuthorizationError = require('../api/exceptions/AuthorizationError');
 
-class AlbumsServices {
+class AlbumsService {
   constructor() {
     this._pool = new Pool();
-    this._songsServices = new SongsServices();
+    this._songsService = new SongsService();
   }
 
   async addAlbum({ name, year }) {
@@ -38,7 +37,7 @@ class AlbumsServices {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
-    const songs = await this._songsServices.getSongsByAlbumId(id);
+    const songs = await this._songsService.getSongsByAlbumId(id);
 
     const finalResult = { ...result.rows[0] };
     finalResult.songs = songs;
@@ -72,4 +71,4 @@ class AlbumsServices {
   }
 }
 
-module.exports = AlbumsServices;
+module.exports = AlbumsService;

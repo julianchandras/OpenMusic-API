@@ -1,7 +1,7 @@
 class AuthenticationsHandler {
-  constructor(authenticationsServices, usersServices, tokenManager, validator) {
-    this._authenticationsServices = authenticationsServices;
-    this._usersServices = usersServices;
+  constructor(authenticationsService, usersService, tokenManager, validator) {
+    this._authenticationsService = authenticationsService;
+    this._usersService = usersService;
     this._tokenManager = tokenManager;
     this._validator = validator;
 
@@ -14,12 +14,12 @@ class AuthenticationsHandler {
     this._validator.validatePostAuthenticationPayload(request.payload);
 
     const { username, password } = request.payload;
-    const id = await this._usersServices.verifyUserCredential(username, password);
+    const id = await this._usersService.verifyUserCredential(username, password);
 
     const accessToken = this._tokenManager.generateAccessToken({ id });
     const refreshToken = this._tokenManager.generateRefreshToken({ id });
 
-    await this._authenticationsServices.addRefreshToken(refreshToken);
+    await this._authenticationsService.addRefreshToken(refreshToken);
 
     const response = h.response({
       status: 'success',
@@ -37,7 +37,7 @@ class AuthenticationsHandler {
     this._validator.validatePutAuthenticationPayload(request.payload);
 
     const { refreshToken } = request.payload;
-    await this._authenticationsServices.verifyRefreshToken(refreshToken);
+    await this._authenticationsService.verifyRefreshToken(refreshToken);
     const { id } = this._tokenManager.verifyRefreshToken(refreshToken);
 
     const accessToken = this._tokenManager.generateAccessToken({ id });
@@ -54,8 +54,8 @@ class AuthenticationsHandler {
     this._validator.validateDeleteAuthenticationPayload(request.payload);
 
     const { refreshToken } = request.payload;
-    await this._authenticationsServices.verifyRefreshToken(refreshToken);
-    await this._authenticationsServices.deleteRefreshToken(refreshToken);
+    await this._authenticationsService.verifyRefreshToken(refreshToken);
+    await this._authenticationsService.deleteRefreshToken(refreshToken);
     return {
       status: 'success',
       message: 'Refresh token berhasil dihapus',
