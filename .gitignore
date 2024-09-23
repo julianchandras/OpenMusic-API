@@ -1,4 +1,6 @@
 .env
 node_modules
-submission.zip
-submission
+submissions
+/submissions/*
+/src/api/albums/covers
+/src/api/albums/covers/*
