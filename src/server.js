@@ -48,6 +48,10 @@ const ExportsValidator = require('./validator/exports');
 // cover
 const StorageService = require('./services/StorageService');
 
+// likes
+const likes = require('./api/likes');
+const LikesService = require('./services/LikesService');
+
 const init = async () => {
   const albumsService = new AlbumsService();
   const storageService = new StorageService(path.resolve(__dirname, 'api/albums/covers'));
@@ -56,6 +60,7 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService();
   const collaborationsService = new CollaborationsService();
   const playlistsService = new PlaylistsService(collaborationsService);
+  const likesService = new LikesService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -145,6 +150,12 @@ const init = async () => {
         exportsService: ProducerService,
         playlistsService,
         validator: ExportsValidator,
+      },
+    },
+    {
+      plugin: likes,
+      options: {
+        service: likesService,
       },
     },
   ]);
