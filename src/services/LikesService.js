@@ -4,8 +4,9 @@ const InvariantError = require('../api/exceptions/InvariantError');
 const NotFoundError = require('../api/exceptions/NotFoundError');
 
 class LikesService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addLike({ userId, albumId }) {
@@ -36,6 +37,7 @@ class LikesService {
     };
     result = await this._pool.query(query);
 
+    await this._cacheService.delete(`playlists:${albumId}`);
     return result.rows[0].id;
   }
 
@@ -49,6 +51,8 @@ class LikesService {
     if (!result.rowCount) {
       throw new NotFoundError('Like gagal dihapus');
     }
+
+    await this._cacheService.delete(`playlists:${albumId}`);
   }
 
   async getLikeByAlbumId(albumId) {
@@ -66,7 +70,9 @@ class LikesService {
       throw new NotFoundError('Album tidak memiliki like');
     }
 
-    return parseInt(result.rows[0].count, 10);
+    const count = parseInt(result.rows[0].count, 10);
+    await this._cacheService.set(`playlists:${albumId}`, count);
+    return count;
   }
 }
 

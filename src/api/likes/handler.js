@@ -1,9 +1,9 @@
 const autoBind = require('auto-bind');
 
 class LikeHandler {
-  constructor(service, validator) {
+  constructor(service, cacheService) {
     this._service = service;
-    this._validator = validator;
+    this._cacheService = cacheService;
 
     autoBind(this);
   }
@@ -38,15 +38,34 @@ class LikeHandler {
   async getAlbumLikesByAlbumIdHandler(request, h) {
     const { id: albumId } = request.params;
 
-    const likes = await this._service.getLikeByAlbumId(albumId);
-    const response = h.response({
-      status: 'success',
-      data: {
-        likes,
-      },
-    });
-    response.code(200);
-    return response;
+    let likes;
+    try {
+      const result = await this._cacheService.get(`playlists:${albumId}`);
+      likes = parseInt(result, 10);
+
+      const response = h.response({
+        status: 'success',
+        data: {
+          likes,
+        },
+      });
+      response.header('X-Data-Source', 'cache');
+      response.code(200);
+
+      return response;
+    } catch (error) {
+      likes = await this._service.getLikeByAlbumId(albumId);
+
+      const response = h.response({
+        status: 'success',
+        data: {
+          likes,
+        },
+      });
+      response.code(200);
+
+      return response;
+    }
   }
 }
 

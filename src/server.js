@@ -52,6 +52,9 @@ const StorageService = require('./services/StorageService');
 const likes = require('./api/likes');
 const LikesService = require('./services/LikesService');
 
+// cache
+const CacheService = require('./services/CacheService');
+
 const init = async () => {
   const albumsService = new AlbumsService();
   const storageService = new StorageService(path.resolve(__dirname, 'api/albums/covers'));
@@ -60,7 +63,8 @@ const init = async () => {
   const authenticationsService = new AuthenticationsService();
   const collaborationsService = new CollaborationsService();
   const playlistsService = new PlaylistsService(collaborationsService);
-  const likesService = new LikesService();
+  const cacheService = new CacheService();
+  const likesService = new LikesService(cacheService);
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -156,6 +160,7 @@ const init = async () => {
       plugin: likes,
       options: {
         service: likesService,
+        cacheService,
       },
     },
   ]);

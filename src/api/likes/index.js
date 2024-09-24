@@ -4,8 +4,8 @@ const routes = require('./routes');
 module.exports = {
   name: 'likes',
   version: '1.0.0',
-  register: async (server, { service, cacheSerivce }) => {
-    const likesHandler = new LikesHandler(service, cacheSerivce);
+  register: async (server, { service, cacheService }) => {
+    const likesHandler = new LikesHandler(service, cacheService);
     server.route(routes(likesHandler));
   },
 };
