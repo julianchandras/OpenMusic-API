@@ -1,6 +1,4 @@
 .env
 node_modules
-submissions
-/submissions/*
+/submissions
 /src/api/albums/covers
-/src/api/albums/covers/*
